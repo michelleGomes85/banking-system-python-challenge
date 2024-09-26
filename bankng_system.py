@@ -1,6 +1,6 @@
-
-# Neste primeira versão o sistema irá trabalhar com somente 1 usuário.
-# Todos os depositos devem ser armazenados em uma variavel e exibidos na operação de extrato
+# Sistema Bancário Simples em Python - Versão 1
+# Desafio do bootcamp Potência Tech powered by iFood | Ciência de Dados
+# Desenvolvido para o módulo "Dominando Python para Ciência de Dados"
 
 def menu():
     
