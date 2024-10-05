@@ -1,4 +1,4 @@
-# Sistema Bancário Simples em Python - Versão 1
+# Sistema Bancário Simples em Python - Versão 2
 # Desafio do bootcamp Potência Tech powered by iFood | Ciência de Dados
 # Desenvolvido para o módulo "Dominando Python para Ciência de Dados"
 
@@ -6,24 +6,87 @@ def menu():
     
     """
     Exibe o menu de opções e captura a escolha do usuário.
-
+    
     Returns:
         str: Opção escolhida pelo usuário.
     """
-    
     menu_text = """
-        [d] - Depositar
-        [s] - Sacar
-        [e] - Extrato
+        [c] - Criar nova conta
+        [e] - Selecionar conta
         [q] - Sair
         =>
     """
     return input(menu_text).lower()
 
+def account_menu():
+    
+    """
+    Exibe o menu de opções da conta e captura a escolha do usuário.
+
+    Returns:
+        str: Opção escolhida pelo usuário.
+    """
+    account_menu_text = """
+        [d] - Depositar
+        [s] - Sacar
+        [e] - Extrato
+        [q] - Voltar
+        =>
+    """
+    
+    return input(account_menu_text).lower()
+
+def create_account(accounts):
+    
+    """
+    Cria uma nova conta vinculada a um CPF e a adiciona ao dicionário de contas.
+
+    Args:
+        accounts (dict): Dicionário de contas.
+
+    Returns:
+        str: CPF da nova conta.
+    """
+    cpf = input("Digite o CPF do usuário (somente números): ")
+    
+    if cpf in accounts:
+        print("Já existe uma conta vinculada a esse CPF.")
+        return cpf
+
+    account_number = str(len(accounts) + 1)
+    accounts[cpf] = {'account_number': account_number, 'balance': 0.0, 'transactions': []}
+    print(f"Conta {account_number} criada com sucesso para o CPF {cpf}.")
+    return cpf
+
+def select_account(accounts):
+    """
+    Permite ao usuário selecionar uma conta para realizar operações.
+
+    Args:
+        accounts (dict): Dicionário de contas.
+
+    Returns:
+        str: CPF da conta selecionada.
+    """
+    if not accounts:
+        print("Nenhuma conta disponível. Crie uma nova conta primeiro.")
+        return None
+
+    print("Contas disponíveis:")
+    for cpf, details in accounts.items():
+        print(f"Conta: {details['account_number']} - CPF: {cpf}")
+
+    selected_cpf = input("Selecione o CPF da conta: ")
+    if selected_cpf in accounts:
+        return selected_cpf
+    else:
+        print("Conta inválida.")
+        return None
+
 def deposit(balance, transactions):
     
     """
-    Realiza a operação de depósito na conta, permitindo apenas valores positivos.
+    Realiza a operação de depósito na conta.
 
     Args:
         balance (float): O saldo atual da conta.
@@ -33,21 +96,20 @@ def deposit(balance, transactions):
         float: O novo saldo atualizado.
         list: Histórico de transações atualizado.
     """
-    
-    amount = float(input('Valor para deposito: '))
+    amount = float(input('Valor para depósito: '))
     if amount > 0:
         balance += amount
-        transactions.append(f"Deposito: R$ {amount:.2f}")
-        print(f"Deposito de R$ {amount:.2f} realizado com sucesso")
+        transactions.append(f"Depósito: R$ {amount:.2f}")
+        print(f"Depósito de R$ {amount:.2f} realizado com sucesso.")
     else:
-        print("Valor invalido para deposito")
+        print("Valor inválido para depósito.")
         
     return balance, transactions
 
 def withdraw(balance, transactions, daily_withdraw_count):
     
     """
-    Realiza a operação de saque, respeitando o limite de 3 saques diários e R$ 500,00 por saque.
+    Realiza a operação de saque.
 
     Args:
         balance (float): O saldo atual da conta.
@@ -59,7 +121,6 @@ def withdraw(balance, transactions, daily_withdraw_count):
         list: Histórico de transações atualizado.
         int: Contador de saques atualizado.
     """
-    
     LIMIT_WITHDRAW = 3
     LIMIT_WITHDRAW_VALUE = 500
     
@@ -73,16 +134,15 @@ def withdraw(balance, transactions, daily_withdraw_count):
             balance -= amount
             transactions.append(f"Saque: R$ {amount:.2f}")
             daily_withdraw_count += 1
-            print(f"Saque de R$ {amount:.2f} realizado com sucesso!!")
+            print(f"Saque de R$ {amount:.2f} realizado com sucesso!")
         else:
-            print("Saldo insuficiente para saque")
+            print("Saldo insuficiente para saque.")
     else:
-        print("Valor invalido para saque. O limite por saque é R$ 500,00.")
+        print("Valor inválido para saque. O limite por saque é R$ 500,00.")
     
     return balance, transactions, daily_withdraw_count
 
 def statement(balance, transactions):
-    
     """
     Exibe o extrato de todas as transações realizadas e o saldo atual da conta.
 
@@ -93,52 +153,58 @@ def statement(balance, transactions):
     Returns:
         None
     """
-    
     print("\n====== Extrato =======\n")
     if not transactions:
-        print("Nenhuma transação realizada")
+        print("Nenhuma transação realizada.")
     else:
         for transaction in transactions:
             print(transaction)
     
     print(f"Saldo atual: R$ {balance:.2f}")
     print("\n=======================\n")
-    
+
 def main():
     
     """
-    Função principal que controla o fluxo do programa e gerencia as operações de depósito, saque e extrato.
+    Função principal que controla o fluxo do programa e gerencia as operações de contas.
 
     Returns:
         None
     """
-    balance = 0.0
-    transactions = []
-    daily_withdraw_count = 0
     
-    while True :
-        option = menu()
+    accounts = {}  # Dicionário para armazenar contas
+    current_cpf = None
+    
+    while True:
         
-        if option == 'd':
-            balance, transactions = deposit(balance, transactions)
-        
-        elif option == 's':
-            balance, transactions, daily_withdraw_count = withdraw(balance, transactions, daily_withdraw_count)
-        
-        elif option == 'e':
-            statement(balance, transactions)
-            
-        elif option == 'q':
-            break
-        
-        else :
-            print("Opção invalida!!!")
-            
+        if current_cpf is None:
+            option = menu()
+            if option == 'c':
+                current_cpf = create_account(accounts)
+            elif option == 'e':
+                current_cpf = select_account(accounts)
+            elif option == 'q':
+                break
+            else:
+                print("Opção inválida!")
+        else:
+            balance = accounts[current_cpf]['balance']
+            transactions = accounts[current_cpf]['transactions']
+            daily_withdraw_count = 0 
+
+            option = account_menu()
+            if option == 'd':
+                balance, transactions = deposit(balance, transactions)
+            elif option == 's':
+                balance, transactions, daily_withdraw_count = withdraw(balance, transactions, daily_withdraw_count)
+            elif option == 'e':
+                statement(balance, transactions)
+            elif option == 'q':
+                accounts[current_cpf]['balance'] = balance  
+                accounts[current_cpf]['transactions'] = transactions  
+                current_cpf = None  
+            else:
+                print("Opção inválida!")
+
 if __name__ == "__main__":
     main()
-        
-        
-    
-
-
-    
